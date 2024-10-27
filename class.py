@@ -3,7 +3,7 @@ from pymongo import MongoClient
 from datetime import datetime
 import re
 import hashlib
-
+ 
 me.connect(host="mongodb://127.0.0.1:27017/TaskBoardDB")
 class User(me.Document):
     username = me.EmailField()

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<link rel="stylesheet" href="/CSS/style.css">
+
+<body>
+    <h1>First Time here?</h1>
+    <form id="registerForm" method="POST">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" placeholder="example@mail.com" required>
+        <br><br>
+
+        <label for="pwd">Password:</label>
+        <input type="password" id="pwd" name="pwd" placeholder="Keep it secret!" required>
+        <br><br>
+
+        <label for="firstname">First Name:</label>
+        <input type="text" id="firstname" name="firstname" required>
+        <br><br>
+
+        <label for="lastname">Last Name:</label>
+        <input type="text" id="lastname" name="lastname" required>
+        <br><br>
+
+        <input type="submit" value="Submit">
+        <p id="errorMessage" style="color:red;"></p> <!-- Placeholder for error messages -->
+    </form>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent form from submitting normally
+
+            const formData = new FormData(this);
+            const response = await fetch('/register', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.error) {
+                document.getElementById('errorMessage').textContent = result.error; // Display error message
+            } else if (result.redirect) {
+                window.location.href = result.redirect; // Redirect to login on success
+            }
+        });
+    </script>
+</body>
+</html>
