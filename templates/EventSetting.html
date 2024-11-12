@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Setting</title>
+</head>
+<link rel="stylesheet" href="/CSS/style.css">
+
+<body>
+    <h1>Create Your Own Event!</h1>
+    <form>
+        <label>Event Name:</label>
+        <input type="text" id="event_name" placeholder="CEN3031">
+        <br><br>
+
+        <label>Start Time:</label>
+        <input type="time" id="start_time" name="start_time" min="00:00" max="24:00" required />
+        <br><br>
+
+        <label>End Time:</label>
+        <input type="time" id="end_time" name="end_time" min="00:00" max="24:00" required />
+        <br><br>
+
+        <label>Location:</label>
+        <input type="text" id="location" placeholder="Union">
+        <br><br>
+
+        <label>Event Type:</label><br>
+        <input type="radio" name="even_type"> Class
+        <input type="radio" name="even_type"> Event
+        <input type="radio" name="even_type"> Holiday
+        <br><br>
+
+        <label>Period:</label><br>
+        <input type="checkbox" name="repeat1"> Monday
+        <input type="checkbox" name="repeat2"> Tuesday
+        <input type="checkbox" name="repeat3"> Wednesday
+        <input type="checkbox" name="repeat4"> Thursday
+        <input type="checkbox" name="repeat5"> Friday
+        <input type="checkbox" name="repeat6"> Saturday
+        <input type="checkbox" name="repeat7"> Sunday
+        <br><br>
+    </form>
+    <input type="submit" value="Submit">
+    <br><br>
+
+    <a href="PersonalInfo.html">Back to Personal Info Page</a>
+</body>
+</html>

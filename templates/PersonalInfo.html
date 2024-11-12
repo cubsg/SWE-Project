@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Profile</title>
+</head>
+<link rel="stylesheet" href="/CSS/style.css">
+
+<body>
+    <div class="nav">
+        <a href="Calender.html">Calender</a>
+    </div>
+
+    <h1>Personal Information</h1>
+
+    <label for="username">Username:</label>
+    <output name="username"></output>
+    <br><br>
+
+    <label for="firstn">First Name:</label>
+    <output name="first_name"></output>
+    <br><br>
+
+    <label for="lastn">Last Name:</label>
+    <output name="last_name"></output>
+    <br><br>
+
+    <label>The Class you attend:</label>
+    <br>
+    <label for="event">Choose an Event:</label>
+    <input list="event" id="event" name="event" />
+
+    <br><br>
+
+    <label>The Organization you attend:</label>
+    <br>
+    <label for="organization">Choose an Organization:</label>
+    <input list="organization" id="organization" name="organization" />
+
+    <datalist id="organization">
+        <option value="1"></option>
+        <option value="2"></option>
+        <option value="3"></option>
+        <option value="4"></option>
+        <option value="5"></option>
+    </datalist>
+    <br><br>
+
+    <label>Do you want to set the default holiday?</label>
+    <br><br>
+    <input type="radio" name="defholiday"> YES
+    <input type="radio" name="defholiday"> NO
+    <br><br>
+
+    <a href="PersonalInfoSetting.html">Go to Set My Name!</a>
+    <br><br>
+
+    <a href="EventSetting.html">Go to Create an Event!</a>
+    <br><br>
+
+    <a href="OrganizationSetting.html">Go to Create an Organization!</a>
+    <br><br>
+
+    <input type="submit" value="Delete the account">
+</body>
+</html>
