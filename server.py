@@ -45,5 +45,18 @@ def register():
 
     return render_template('RegisterPage.html')  # Display registration page
 
+''' George - Implement routes for:
+        adding event
+        adding class/org to user
+        get user events to display calendar
+'''
+
+'''John - Implement routes for:
+        removal of user
+        removal of org
+        removal of event
+        removal of org from user
+'''
+    
 if __name__ == '__main__':
     app.run(debug=True)

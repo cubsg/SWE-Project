@@ -100,7 +100,7 @@ def add_event(event_name, start_time, end_time, location, username=None, organiz
         return print(f"Success: {event_name} added to {organization_name}'s calendar")
     
     return print("Error: No valid user or organization provided")
-
+#John - Implement removal functions
 def remove_user():
     pass
 
