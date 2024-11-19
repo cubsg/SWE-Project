@@ -101,14 +101,26 @@ def add_event(event_name, start_time, end_time, location, username=None, organiz
     
     return print("Error: No valid user or organization provided")
 #John - Implement removal functions
-def remove_user():
-    pass
+def remove_user(username):
+    user = User.objects(username=username.lower()).first()
+    if not user:
+            return "Error: User not found"
+    user.delete()
+    return f"Success: User '{username}' removed successfully"
 
-def remove_org():
-    pass
+def remove_org(name):
+    org = Organization.objects(name=name.lower()).first()
+    if not org:
+        return "Error: Organization not found"
+    org.delete()
+    return f"Success: Organization '{name}' removed successfully"
 
-def remove_event():
-    pass
+def remove_event(event_name):
+    event = Event.objects(name=event_name).first()
+    if not event:
+        return "Error: Event not found"
+    event.delete()
+    return f"Success: Event '{event_name}' removed successfully"
 
 def add_org_to_user(email, organization):
     email = email.lower()

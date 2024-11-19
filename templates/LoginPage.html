@@ -5,24 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
 </head>
-<link rel="stylesheet" href="/CSS/style.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
 
 <body>
-    <h1>Welcome to the Calender</h1>
-    <form>
+    <h1>Welcome to the Calendar</h1>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST" action="/login">
         <label for="username">Username:</label>
-        <input type="text" id="username" placeholder="example@mail.com">
+        <input type="text" id="username" name="username" placeholder="example@mail.com">
         <br><br>
-
+    
         <label for="pwd">Password:</label>
-        <input type="password" id="pwd" placeholder="Keep it secret!">
+        <input type="password" id="pwd" name="pwd" placeholder="Keep it secret!">
         <br><br>
-
+    
         <input type="submit" value="Login In">
-    </form>
-
-    <form action="#">
-
     </form>
     <h3>First time?</h3>
     <a href="/register">Register Here!</a>

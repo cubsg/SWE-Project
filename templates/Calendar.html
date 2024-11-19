@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar</title>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
+
+<body>
+    <div class="nav">
+        <a href="PersonalInfo.html">Personal Profile</a>
+    </div>
+
+    <h1>Calendar</h1>
+    <form action="">
+        <h2 align="center" style="color: orange;">
+            November 2024
+        </h2>
+        <br />
+         
+        <table bgcolor="lightgrey" align="center"
+            cellspacing="21" cellpadding="21">
+     
+            <caption align="top">
+     
+            <thead>
+                <tr>
+                    <th>Sun</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                    <th>Sat</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                    <tr>
+                        <td colspan="7">{{ event.name }}: {{ event.starttime.strftime('%Y-%m-%d') }} - {{ event.location }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </body>
+    </html>
