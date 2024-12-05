@@ -1,47 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar</title>
-</head>
-<link rel="stylesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
+{% extends "base.html" %}
 
-<body>
-    <div class="nav">
-        <a href="PersonalInfo.html">Personal Profile</a>
+{% block title %}Weekly Calendar{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="calendar-container">
+    <div class="calendar-header">
+        <button id="prev-week">&#9664;</button>
+        <h2 id="week-range">{{ week_range }}</h2>
+        <button id="next-week">&#9654;</button>
     </div>
-
-    <h1>Calendar</h1>
-    <form action="">
-        <h2 align="center" style="color: orange;">
-            November 2024
-        </h2>
-        <br />
-         
-        <table bgcolor="lightgrey" align="center"
-            cellspacing="21" cellpadding="21">
-     
-            <caption align="top">
-     
-            <thead>
-                <tr>
-                    <th>Sun</th>
-                    <th>Mon</th>
-                    <th>Tue</th>
-                    <th>Wed</th>
-                    <th>Thu</th>
-                    <th>Fri</th>
-                    <th>Sat</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for event in events %}
-                    <tr>
-                        <td colspan="7">{{ event.name }}: {{ event.starttime.strftime('%Y-%m-%d') }} - {{ event.location }}</td>
-                    </tr>
+    <div class="calendar-weekdays">
+        <div class="weekday">
+            <div class="weekday-name">Time</div>
+            <div class="weekday-date"></div>
+        </div>
+        {% for day in days %}
+            <div class="weekday">
+                <div class="weekday-name">{{ day.strftime('%A') }}</div>
+                <div class="weekday-date">{{ day.strftime('%b %d') }}</div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="calendar-timeslots">
+        {% for slot in time_slots %}
+            {% set slot_index = loop.index0 %}
+            <div class="timeslot">
+                <div class="timeslot-label">{{ slot.start_time }} - {{ slot.end_time }}</div>
+                {% for day in days %}
+                    {% set day_index = loop.index0 %}
+                    <div class="timeslot-events" 
+                         id="timeslot-{{ slot_index }}-{{ day_index }}" 
+                         data-day="{{ day.strftime('%Y-%m-%d') }}" 
+                         data-time="{{ slot.start_time }}">
+                    </div>
                 {% endfor %}
-            </tbody>
-        </table>
-    </body>
-    </html>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal for Event Details -->
+<div id="event-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h3>Event Details</h3>
+        <p id="modal-event-name"></p>
+        <p id="modal-event-time"></p>
+        <p id="modal-event-location"></p>
+    </div>
+</div>
+
+<!-- Modal for Adding New Event -->
+<div id="add-event-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h3>Add New Event</h3>
+        <form id="add-event-form">
+            <label for="event-name">Event Name:</label><br>
+            <input type="text" id="event-name" name="event_name" required><br><br>
+            
+            <label for="start-time">Start Time:</label><br>
+            <input type="datetime-local" id="start-time" name="start_time" required><br><br>
+            
+            <label for="end-time">End Time:</label><br>
+            <input type="datetime-local" id="end-time" name="end_time" required><br><br>
+            
+            <label for="location">Location:</label><br>
+            <input type="text" id="location" name="location" required><br><br>
+            
+            <button type="submit">Add Event</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Pass week_start from Flask to JavaScript
+    const weekStartStr = "{{ week_start }}";
+</script>
+<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+{% endblock %}

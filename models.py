@@ -1,8 +1,9 @@
 import mongoengine as me
 from pymongo import MongoClient
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import re
 import hashlib
+from dateutil import parser
  
 me.connect(host="mongodb://127.0.0.1:27017/TaskBoardDB")
 class User(me.Document):
@@ -26,10 +27,10 @@ class Organization(me.Document):
     repeat = BooleanField()'''
 
 class Event(me.Document):
-    name = me.StringField()
-    starttime = me.DateField()
-    endtime = me.DateField()
-    location = me.StringField()
+    name = me.StringField(required=True)
+    starttime = me.DateTimeField(required=True)
+    endtime = me.DateTimeField(required=True)
+    location = me.StringField(required=True)
 
 def add_user(email, password, firstname, lastname):
     email = email.lower()
@@ -75,31 +76,64 @@ def add_org(type, name, username): #type - class or org
     return print(f"Success: {username} Created {name}")
 
 def add_event(event_name, start_time, end_time, location, username=None, organization_name=None):
-    event_data = Event(name=event_name,starttime=start_time,endtime=end_time,location=location)
+    # Parse the start_time and end_time with timezone awareness
+    try:
+        start_datetime = parser.isoparse(start_time)
+        end_datetime = parser.isoparse(end_time)
+        
+        # Optionally, convert to UTC
+        if start_datetime.tzinfo is None:
+            start_datetime = start_datetime.replace(tzinfo=timezone.utc)
+        else:
+            start_datetime = start_datetime.astimezone(timezone.utc)
+        
+        if end_datetime.tzinfo is None:
+            end_datetime = end_datetime.replace(tzinfo=timezone.utc)
+        else:
+            end_datetime = end_datetime.astimezone(timezone.utc)
+        
+    except ValueError:
+        return "Error: Invalid date and time format. Use ISO 8601 format."
+    
+    event_dict = {
+        'name': event_name,
+        'starttime': start_datetime,
+        'endtime': end_datetime,
+        'location': location
+    }
 
     if username: 
         user = User.objects(username=username.lower()).first()
-        if not user:    #Check that user adding the event exists
-            return print("Error: User not found")
+        if not user:
+            return "Error: User not found."
         
-        if event_data.to_mongo() in user.events:    #Check if event already exists in users calendar
-            return print(f"Error: {event_name} already exists in {username}'s calendar")
+        # Check if event already exists in user's calendar
+        for event in user.events:
+            if (event.get('name') == event_name and 
+                event.get('starttime') == start_datetime and 
+                event.get('endtime') == end_datetime):
+                return f"Error: '{event_name}' already exists in your calendar."
         
-        user.update(add_to_set__events=[event_data.to_mongo()])
-        return print(f"Success: {event_name} added to {username}'s calendar")
+        user.update(add_to_set__events=[event_dict])
+        return f"Success: '{event_name}' added to your calendar."
     
     if organization_name:
         organization = Organization.objects(name=organization_name.lower()).first()
-        if not organization:    #Check that organization exists
-            return print("Error: Organization not found")
+        if not organization:
+            return "Error: Organization not found."
         
-        if event_data.to_mongo() in organization.events:    #Check that event does not already exist in org calendar
-            return print(f"Error: {event_name} already exists in {organization_name}'s calendar")
+        # Check that event does not already exist in org calendar
+        for event in organization.events:
+            if (event.get('name') == event_name and 
+                event.get('starttime') == start_datetime and 
+                event.get('endtime') == end_datetime):
+                return f"Error: '{event_name}' already exists in {organization_name}'s calendar."
         
-        organization.update(add_to_set__events=[event_data.to_mongo()])
-        return print(f"Success: {event_name} added to {organization_name}'s calendar")
+        organization.update(add_to_set__events=[event_dict])
+        return f"Success: '{event_name}' added to {organization_name}'s calendar."
     
-    return print("Error: No valid user or organization provided")
+    return "Error: No valid user or organization provided."
+
 #John - Implement removal functions
 def remove_user(username):
     user = User.objects(username=username.lower()).first()
@@ -169,22 +203,42 @@ def remove_org_from_user(email, organization):
     User.objects(username=email).update_one(pull__organizations=organization)
     return print(f"Success: Removed '{organization}' from user '{email}'")
 
-def get_user_events(username):
+def get_user_events(username, week_start_str=None):
     user = User.objects(username=username.lower()).first()
     if not user:
-        return print(f"Error: User '{username}' not found")
-    
-    user_events = user.events
+        return []
 
-    # Collect events from organizations the user is part of
+    try:
+        week_start_date = datetime.strptime(week_start_str, '%Y-%m-%d') if week_start_str else datetime.today()
+    except ValueError:
+        return []
+
+    week_end_date = week_start_date + timedelta(days=6)
+    
+    user_events = [
+        event for event in user.events
+        if event.get('starttime') <= week_end_date and event.get('endtime') >= week_start_date
+    ]
+
     org_events = []
     for org_name in user.organizations:
         organization = Organization.objects(name=org_name.lower()).first()
         if organization:
-            org_events.extend(organization.events)
-    
-    # Combine user events with organization events
-    all_events = user_events + org_events
+            org_events.extend([
+                event for event in organization.events
+                if event.get('starttime') <= week_end_date and event.get('endtime') >= week_start_date
+            ])
 
-    # Return the combined list of events
-    return all_events
+    all_events = user_events + org_events
+    formatted_events = [
+        {
+            'name': event.get('name'),
+            'starttime': event.get('starttime').isoformat(),
+            'endtime': event.get('endtime').isoformat(),
+            'location': event.get('location')
+        }
+        for event in all_events
+    ]
+    
+    return formatted_events
+

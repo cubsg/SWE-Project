@@ -1,26 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Organization Setting</title>
-</head>
-<link rel="stylesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
+<!-- templates/OrganizationSetting.html -->
+{% extends "base.html" %}
 
-<body>
+{% block title %}Organization Setting{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block content %}
     <h1>Create Your Own Organization!</h1>
-    <form>
-        <label for="organization_name">Event Name:</label>
-        <input type="text" id="organization_name" placeholder="CEN3031">
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label for="organization_name">Organization Name:</label>
+        <input type="text" id="organization_name" name="organization_name" placeholder="CEN3031" required>
         <br><br>
 
+        <label>Organization Type:</label><br>
+        <input type="radio" name="org_type" value="class" required> Class<br>
+        <input type="radio" name="org_type" value="club" required> Club<br>
+        <br>
 
-
-
+        <button type="submit">Submit</button>
     </form>
-    <input type="submit" value="Submit">
-    <br><br>
 
-    <a href="PersonalInfo.html">Back to Personal Info Page</a>
-</body>
-</html>
+    <br><br>
+    <a href="{{ url_for('personal_info') }}">Back to Personal Info Page</a>
+{% endblock %}

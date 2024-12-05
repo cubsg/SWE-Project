@@ -1,0 +1,31 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Student Calendar{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {% if session.get('username') %}
+    <div class="navbar">
+        <button id="profile" onclick="location.href='{{ url_for('personal_info') }}'">
+            Profile
+        </button>
+        <button id="calendar" onclick="location.href='{{ url_for('calendar_view') }}'">
+            Calendar
+        </button>
+        <button id="logout" onclick="location.href='{{ url_for('logout') }}'">
+            Logout
+        </button>
+    </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>
