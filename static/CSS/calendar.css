@@ -114,6 +114,9 @@
     transition: background-color 0.3s;
     width: 100%; /* Ensure the event spans the full width of the container */
     z-index: 1; /* Keep the event above the container */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .event:hover {
@@ -222,8 +225,15 @@
         padding: 3px;
     }
 
-    .event {
-        font-size: 12px;
-        padding: 3px 5px;
+    .event-continuation {
+        background-color: #2980b9; /* Darker blue to indicate continuation */
+        border-radius: 0 0 5px 5px;
+        cursor: default;
+        pointer-events: none;
+        position: absolute;
+        left: 0;
+        width: 100%;
+        z-index: 1;
     }
+    
 }

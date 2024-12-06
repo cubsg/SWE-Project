@@ -17,6 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("Current Week Start:", currentWeekStart);
     let currentEvent = null;
 
+    // Define slot parameters
+    const SLOT_DURATION_HOURS = 2; // Each slot is 2 hours
+    const FIRST_SLOT_START_HOUR = 0; // Adjusted to 0 (midnight) if needed
+    const TOTAL_SLOTS_PER_DAY = 12; // 24 / 2
+
     /**
      * Adjusts JavaScript's getDay() output to align with Monday as 0.
      * @param {number} day
@@ -53,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         timeslotEventContainers.forEach(container => {
             // Extract the day index from the container's ID
-            const [_, timeslotIndex, dayIndex] = container.id.split('-').map(part => parseInt(part));
+            const [_, slotIndex, dayIndex] = container.id.split('-').map(part => parseInt(part));
             
             // Calculate the new date for this day index
             const newDate = new Date(weekStartDate.getTime() + dayIndex * 24 * 60 * 60 * 1000);
@@ -98,8 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Renders events on the calendar with proper handling of overlapping events.
-     * @param {Array} eventsToRender
+     * Renders events on the calendar by iterating through relevant timeslot containers.
+     * @param {Array} eventsToRender - Array of event objects.
      */
     function renderEvents(eventsToRender) {
         // Clear existing events
@@ -108,90 +113,119 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = '';
         });
 
-        // Create a mapping from container ID to array of events
-        const containerEventsMap = {};
-
         eventsToRender.forEach(event => {
             const eventStart = new Date(event.starttime);
             const eventEnd = new Date(event.endtime);
 
-            const dayIndex = getAdjustedDayIndex(eventStart.getDay());
-            const startHour = eventStart.getHours();
-            const timeslotIndex = Math.floor(startHour / 2);
+            const dayIndex = getAdjustedDayIndex(eventStart.getDay()); // 0 for Monday
 
-            const containerId = `timeslot-${timeslotIndex}-${dayIndex}`;
-            if (!containerEventsMap[containerId]) {
-                containerEventsMap[containerId] = [];
+            // Calculate event start and end times in minutes since midnight
+            const startMinutes = eventStart.getHours() * 60 + eventStart.getMinutes();
+            const endMinutes = eventEnd.getHours() * 60 + eventEnd.getMinutes();
+
+            console.log(`\nEvent: ${event.name}`);
+            console.log(`Start Time: ${eventStart.toLocaleTimeString()}`);
+            console.log(`End Time: ${eventEnd.toLocaleTimeString()}`);
+            console.log(`Start Minutes: ${startMinutes}`);
+            console.log(`End Minutes: ${endMinutes}`);
+
+            // Validate event timing within 24-hour bounds
+            if (startMinutes < 0 || endMinutes > 1440 || startMinutes >= endMinutes) {
+                console.warn(`Event "${event.name}" has invalid timing and will be skipped.`);
+                return;
             }
-            containerEventsMap[containerId].push(event);
-        });
 
-        // Now, for each container, render its events with overlap handling
-        for (const containerId in containerEventsMap) {
-            const container = document.getElementById(containerId);
-            if (container) {
-                const events = containerEventsMap[containerId];
-                
-                // Sort events by start time
-                events.sort((a, b) => new Date(a.starttime) - new Date(b.starttime));
+            // Calculate the starting and ending slot indices
+            const startSlotIndex = Math.floor((startMinutes - FIRST_SLOT_START_HOUR * 60) / (SLOT_DURATION_HOURS * 60));
+            const endSlotIndex = Math.ceil((endMinutes - FIRST_SLOT_START_HOUR * 60) / (SLOT_DURATION_HOURS * 60));
 
-                // Array to keep track of columns and their latest end times
-                const columns = [];
+            // Ensure slot indices are within valid range
+            const adjustedStartSlotIndex = Math.max(0, startSlotIndex);
+            const adjustedEndSlotIndex = Math.min(TOTAL_SLOTS_PER_DAY, endSlotIndex);
 
-                events.forEach(event => {
-                    const eventStart = new Date(event.starttime);
-                    const eventEnd = new Date(event.endtime);
-                
-                    let placed = false;
-                    for (let i = 0; i < columns.length; i++) {
-                        if (eventStart >= columns[i]) {
-                            // Place event in this column
-                            columns[i] = eventEnd;
-                            event.column = i;
-                            placed = true;
-                            break;
+            console.log(`Start Slot Index: ${adjustedStartSlotIndex}`);
+            console.log(`End Slot Index: ${adjustedEndSlotIndex}`);
+
+            // Iterate through each timeslot the event spans
+            for (let slotIndex = adjustedStartSlotIndex; slotIndex < adjustedEndSlotIndex; slotIndex++) {
+                const containerId = `timeslot-${slotIndex}-${dayIndex}`;
+                const container = document.getElementById(containerId);
+
+                if (container) {
+                    if (slotIndex === adjustedStartSlotIndex) {
+                        // First timeslot: create the main event box
+                        const slotStartTime = FIRST_SLOT_START_HOUR * 60 + slotIndex * SLOT_DURATION_HOURS * 60;
+                        const slotEndTime = slotStartTime + SLOT_DURATION_HOURS * 60;
+
+                        // Calculate the overlap within this slot
+                        const overlapStart = Math.max(startMinutes, slotStartTime);
+                        const overlapEnd = Math.min(endMinutes, slotEndTime);
+                        const overlapDuration = overlapEnd - overlapStart;
+                        const overlapPercentage = (overlapDuration / (SLOT_DURATION_HOURS * 60)) * 100;
+
+                        // Define the minimum overlap percentage required to display the event name
+                        const MIN_OVERLAP_PERCENTAGE = 50; // Display name only if event box is >= 50% of cell
+
+                        // Create the main event div
+                        const eventDiv = document.createElement('div');
+                        eventDiv.classList.add('event');
+
+                        // Conditionally set the event name based on overlap percentage
+                        if (overlapPercentage >= MIN_OVERLAP_PERCENTAGE) {
+                            eventDiv.innerText = event.name;
+                        } else {
+                            eventDiv.innerText = ''; // Do not display the event name
                         }
-                    }
-                
-                    if (!placed) {
-                        // Create new column
-                        columns.push(eventEnd);
-                        event.column = columns.length - 1;
-                    }
-                });
-                
-                const totalColumns = columns.length;
-                
-                events.forEach(event => {
-                    const eventDiv = document.createElement('div');
-                    eventDiv.classList.add('event');
-                    eventDiv.innerText = event.name;
 
-                    // Add click listener to show event details
-                    eventDiv.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Prevent triggering the container's click event
-                        openEventModal(event);
-                    });
-                
-                    const startMinutes = new Date(event.starttime).getMinutes();
-                    const durationMs = new Date(event.endtime) - new Date(event.starttime);
-                    const durationHours = durationMs / (1000 * 60 * 60);
-                
-                    // Position within timeslot
-                    eventDiv.style.top = `${(startMinutes / 60) * 100}%`;
-                    eventDiv.style.height = `${(durationHours / 2) * 100}%`;
-                
-                    // Horizontal positioning
-                    eventDiv.style.width = `${100 / totalColumns}%`;
-                    eventDiv.style.left = `${(event.column * 100) / totalColumns}%`;
-                
-                    container.appendChild(eventDiv);
-                });
+                        eventDiv.style.top = `${((overlapStart - slotStartTime) / (SLOT_DURATION_HOURS * 60)) * 100}%`;
+                        eventDiv.style.height = `${overlapPercentage}%`;
 
-            } else {
-                console.warn(`Container with ID ${containerId} not found for events:`, containerEventsMap[containerId]);
+                        // Add click listener to show event details
+                        eventDiv.addEventListener('click', (e) => {
+                            e.stopPropagation(); // Prevent triggering the container's click event
+                            openEventModal(event);
+                        });
+
+                        // Style the event box
+                        eventDiv.style.position = 'absolute';
+                        eventDiv.style.left = '0';
+                        eventDiv.style.width = '100%';
+
+                        // Append the event box to the container
+                        container.appendChild(eventDiv);
+                    } else if (slotIndex === adjustedEndSlotIndex - 1) {
+                        // Last timeslot: create a partial continuation marker
+                        const slotStartTime = FIRST_SLOT_START_HOUR * 60 + slotIndex * SLOT_DURATION_HOURS * 60;
+                        const slotEndTime = slotStartTime + SLOT_DURATION_HOURS * 60;
+
+                        const overlapStart = Math.max(startMinutes, slotStartTime);
+                        const overlapEnd = Math.min(endMinutes, slotEndTime);
+                        const overlapDuration = overlapEnd - overlapStart;
+                        const overlapPercentage = (overlapDuration / (SLOT_DURATION_HOURS * 60)) * 100;
+
+                        // Create the continuation marker
+                        const continuationDiv = document.createElement('div');
+                        continuationDiv.classList.add('event-continuation');
+                        continuationDiv.style.height = `${overlapPercentage}%`;
+                        continuationDiv.style.top = '0%';
+                        continuationDiv.style.width = '100%';
+
+                        container.appendChild(continuationDiv);
+                    } else {
+                        // Middle timeslots: create full-height continuation markers
+                        const continuationDiv = document.createElement('div');
+                        continuationDiv.classList.add('event-continuation');
+                        continuationDiv.style.height = `100%`;
+                        continuationDiv.style.top = '0%';
+                        continuationDiv.style.width = '100%';
+
+                        container.appendChild(continuationDiv);
+                    }
+                } else {
+                    console.warn(`Container with ID ${containerId} not found for event:`, event);
+                }
             }
-        }
+        });
     }
 
     /**
@@ -275,18 +309,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // Pre-fill the start time based on the clicked timeslot
         const startTimeInput = document.getElementById('start-time');
         const endTimeInput = document.getElementById('end-time');
-
+    
         const [hour, minute] = time.split(':');
         const startDateTime = new Date(day);
+        
+        // Manually add +1 day to correct the autofill issue
+        startDateTime.setDate(startDateTime.getDate() + 1);
         startDateTime.setHours(parseInt(hour), parseInt(minute));
-
-        // Set start time input
-        const formattedStart = startDateTime.toISOString();
+    
+        // Set start time input in "YYYY-MM-DDTHH:MM" format
+        const formattedStart = startDateTime.toISOString().slice(0,16); // "YYYY-MM-DDTHH:MM"
         startTimeInput.value = formattedStart;
-
+    
         // Set end time input (default +2 hours)
         const endDateTime = new Date(startDateTime.getTime() + 2 * 60 * 60 * 1000);
-        const formattedEnd = endDateTime.toISOString();
+        const formattedEnd = endDateTime.toISOString().slice(0,16); // "YYYY-MM-DDTHH:MM"
         endTimeInput.value = formattedEnd;
     }
 
@@ -345,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('An error occurred while deleting the event.');
             });
     });
-    
+
 
     // Add event listener to timeslot-events for adding new events
     const timeslotEventContainers = document.querySelectorAll('.timeslot-events');
