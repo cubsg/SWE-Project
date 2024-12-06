@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Manually add +1 day to correct the autofill issue
         startDateTime.setDate(startDateTime.getDate() + 1);
-        startDateTime.setHours(parseInt(hour), parseInt(minute));
+        startDateTime.setHours(parseInt(hour) - 5, parseInt(minute));
     
         // Set start time input in "YYYY-MM-DDTHH:MM" format
         const formattedStart = startDateTime.toISOString().slice(0,16); // "YYYY-MM-DDTHH:MM"
