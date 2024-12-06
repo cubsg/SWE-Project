@@ -112,8 +112,8 @@
     box-sizing: border-box;
     cursor: pointer;
     transition: background-color 0.3s;
-    width: 100%; /* Ensure the event spans the full width of the container */
-    z-index: 1; /* Keep the event above the container */
+    width: 100%;
+    z-index: 2;
     align-items: center;
     justify-content: center;
     text-align: center;
@@ -190,6 +190,17 @@
     text-decoration: none;
 }
 
+.event-continuation {
+    background-color: #2980b9;
+    border-radius: 0 0 5px 5px;
+    cursor: default;
+    pointer-events: none;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    z-index: 1;
+}
+
 @media (max-width: 768px) {
     .calendar-container {
         width: 100%;
@@ -223,17 +234,6 @@
 
     .timeslot-events {
         padding: 3px;
-    }
-
-    .event-continuation {
-        background-color: #2980b9; /* Darker blue to indicate continuation */
-        border-radius: 0 0 5px 5px;
-        cursor: default;
-        pointer-events: none;
-        position: absolute;
-        left: 0;
-        width: 100%;
-        z-index: 1;
     }
     
 }
