@@ -1,4 +1,3 @@
-<!-- templates/PersonalInfo.html -->
 {% extends "base.html" %}
 
 {% block title %}Personal Profile{% endblock %}
@@ -15,25 +14,36 @@
     <p><strong>First Name:</strong> {{ user.firstname }}</p>
     <p><strong>Last Name:</strong> {{ user.lastname }}</p>
 
-    <h2>Your Classes:</h2>
-    <ul>
-        {% for cls in user.classes %}
-            <li>{{ cls }}</li>
-        {% else %}
-            <li>No classes added.</li>
-        {% endfor %}
-    </ul>
-
     <h2>Your Organizations:</h2>
     <ul>
         {% for org in user.organizations %}
-            <li>{{ org }}</li>
+            <li>
+                {{ org.title() }}
+                <form action="{{ url_for('remove_org_from_user_route') }}" method="POST" style="display:inline;">
+                    <input type="hidden" name="organization" value="{{ org }}">
+                    <button type="submit">Remove</button>
+                </form>
+            </li>
         {% else %}
             <li>No organizations added.</li>
         {% endfor %}
     </ul>
 
+
     <a href="{{ url_for('personal_info_settings') }}">Set My Name</a><br><br>
     <a href="{{ url_for('event_setting') }}">Create an Event</a><br><br>
-    <a href="{{ url_for('organization_setting') }}">Create an Organization</a><br><br>
+    <h2>Add an Organization to Your Profile</h2>
+    <form action="{{ url_for('add_organization_to_user') }}" method="POST">
+        <label for="organization">Select Organization:</label><br>
+        <select name="organization" id="organization" required>
+            <option value="" disabled selected>-- Select an Organization --</option>
+            {% for org in all_organizations %}
+                {% if org.name not in user.organizations %}
+                    <option value="{{ org.name }}">{{ org.name.title() }}</option>
+                {% endif %}
+            {% endfor %}
+        </select><br><br>
+        <button type="submit">Add Organization</button>
+    </form>
+
 {% endblock %}

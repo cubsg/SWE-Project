@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
 from mongoengine import connect
-from models import User, add_user, get_user_events, add_event, remove_user, remove_org, remove_event, remove_org_from_user, add_org  # Import User and helper functions from class.py
+from models import User, Organization,add_user, get_user_events, add_event, remove_user, remove_org, remove_event, remove_org_from_user, add_org  # Import User and helper functions from class.py
 import hashlib
 from datetime import datetime, timedelta
 import calendar
@@ -109,18 +109,12 @@ def calendar_view():
         time_slots=time_slots,
         current_month_year=current_month_year,
         week_range=week_range,
-        week_start=week_start  # Ensure it's in YYYY-MM-DD format
+        week_start=week_start
     )
 
 @app.route('/favicon.ico')
 def favicon():
     return '', 204
-
-''' George - Implement routes for:
-        adding event
-        adding class/org to user
-        get user events to display calendar
-'''
 
 @app.route('/get_events', methods=['GET'])
 def get_events():
@@ -161,8 +155,10 @@ def personal_info():
     if not user:
         return redirect(url_for('login'))
     
-    # Pass user information to the template
-    return render_template('PersonalInfo.html', user=user)
+    all_organizations = Organization.objects().order_by('name')
+
+    # Pass both user and all_organizations to the template
+    return render_template('PersonalInfo.html', user=user, all_organizations=all_organizations)
 
 @app.route('/personal_info_settings', methods=['GET', 'POST'])
 def personal_info_settings():
@@ -185,8 +181,6 @@ def personal_info_settings():
         return redirect(url_for('personal_info'))
 
     return render_template('PersonalInfoSetting.html', user=user)
-
-# server.py
 
 @app.route('/event_setting', methods=['GET', 'POST'])
 def event_setting():
@@ -244,24 +238,6 @@ def event_setting():
     # If GET request, redirect to calendar or render a default view
     return redirect(url_for('calendar_view'))
 
-@app.route('/organization_setting', methods=['GET', 'POST'])
-def organization_setting():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
-    if request.method == 'POST':
-        org_type = request.form.get('org_type')
-        org_name = request.form.get('organization_name')
-
-        # Validate and add organization
-        result = add_org(org_type, org_name, session['username'])
-        if "Success" in result:
-            return redirect(url_for('personal_info'))
-        else:
-            return render_template('OrganizationSetting.html', error=result)
-
-    return render_template('OrganizationSetting.html')
-
 @app.route('/delete_user', methods=['POST'])
 def delete_user():
     username = request.form.get('username')
@@ -289,16 +265,72 @@ def delete_event():
     else:
         return jsonify({"error": result}), 400
 
-@app.route('/delete_org_from_user', methods=['POST'])
-def delete_org_from_user():
-    username = request.form.get('username')
-    org_name = request.form.get('org_name')
-    result = remove_org_from_user(username, org_name)
-    if "Success" in result:
-        return jsonify({"message": result})
-    else:
-        return jsonify({"error": result}), 400
+@app.route('/remove_org_from_user', methods=['POST'])
+def remove_org_from_user_route():
+    if 'username' not in session:
+        flash("You must be logged in to perform this action.", "error")
+        return redirect(url_for('login'))
     
+    username = session['username']
+    user = User.objects(username=username.lower()).first()
+    
+    if not user:
+        flash("User not found.", "error")
+        return redirect(url_for('login'))
+    
+    organization_name = request.form.get('organization')
+    
+    if not organization_name:
+        flash("No organization selected.", "error")
+        return redirect(url_for('personal_info'))
+    
+    # Check if organization is in user's list
+    if organization_name not in user.organizations:
+        flash("Organization not found in your profile.", "error")
+        return redirect(url_for('personal_info'))
+    
+    # Remove organization from user
+    user.update(pull__organizations=organization_name)
+    
+    flash(f"Organization '{organization_name.title()}' removed from your profile.", "success")
+    return redirect(url_for('personal_info'))
+    
+@app.route('/add_organization_to_user', methods=['POST'])
+def add_organization_to_user():
+    if 'username' not in session:
+        flash("You must be logged in to perform this action.", "error")
+        return redirect(url_for('login'))
+    
+    username = session['username']
+    user = User.objects(username=username.lower()).first()
+    
+    if not user:
+        flash("User not found.", "error")
+        return redirect(url_for('login'))
+    
+    organization_name = request.form.get('organization')
+    
+    if not organization_name:
+        flash("No organization selected.", "error")
+        return redirect(url_for('personal_info'))
+    
+    # Check if organization exists
+    organization = Organization.objects(name=organization_name.lower()).first()
+    if not organization:
+        flash("Selected organization does not exist.", "error")
+        return redirect(url_for('personal_info'))
+    
+    # Check if user already has the organization
+    if organization.name in user.organizations:
+        flash("Organization already added to your profile.", "error")
+        return redirect(url_for('personal_info'))
+    
+    # Add organization to user
+    user.update(add_to_set__organizations=organization.name)
+    
+    flash(f"Organization '{organization.name.title()}' added to your profile.", "success")
+    return redirect(url_for('personal_info'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

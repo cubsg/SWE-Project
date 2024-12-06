@@ -51,7 +51,7 @@ def add_user(email, password, firstname, lastname):
     user_data.save()
     return "Success: User added successfully"
 
-def add_org(type, name, username): #type - class or org
+def add_org(type, name, username):
     name = name.lower()
 
     if type == "class": #Forcing class names to be course codes only
@@ -134,7 +134,6 @@ def add_event(event_name, start_time, end_time, location, username=None, organiz
     
     return "Error: No valid user or organization provided."
 
-#John - Implement removal functions
 def remove_user(username):
     user = User.objects(username=username.lower()).first()
     if not user:
