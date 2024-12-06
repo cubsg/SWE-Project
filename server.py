@@ -109,7 +109,7 @@ def calendar_view():
         time_slots=time_slots,
         current_month_year=current_month_year,
         week_range=week_range,
-        week_start=week_start.strftime('%Y-%m-%d')  # Ensure it's in YYYY-MM-DD format
+        week_start=week_start  # Ensure it's in YYYY-MM-DD format
     )
 
 @app.route('/favicon.ico')
