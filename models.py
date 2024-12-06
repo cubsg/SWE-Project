@@ -12,9 +12,7 @@ class User(me.Document):
     password = me.StringField()
     firstname = me.StringField()
     lastname = me.StringField()
-    classes = me.ListField()
     organizations = me.ListField()
-    holidays = me.ListField()
     events = me.ListField(me.DictField())
 
 class Organization(me.Document):
@@ -46,32 +44,6 @@ def add_user(email, password, firstname, lastname):
     user_data = User(username=email, password=hashedpassword, firstname=firstname, lastname=lastname)
     user_data.save()
     return "Success: User added successfully"
-
-'''
-def add_org(type, name, username):
-    name = name.lower()
-
-    if type == "class": #Forcing class names to be course codes only
-        if not re.match(r"^[A-Z]{3,4}\d{3,4}$", name.upper()):
-            return print("Error: Class names must follow the format 'XXX0000' (3-4 letters followed by 3-4 numbers)")
-    
-    elif type == "club": #Forcing club names to be alphabetic only
-        if not re.match(r"^[a-zA-Z\s]+$", name):
-            return print("Error: Club names must contain only alphabetic characters and spaces")
-
-    else:
-        return print("Error: Unknown organization type")
-    
-    if Organization.objects(name=name):
-        return print("Error: Organization with that name already exists")
-    
-    org_data = Organization(type=type, name=name)
-    org_data.save()
-
-    add_org_to_user(username, name)
-
-    return print(f"Success: {username} Created {name}")
-'''
 
 def add_event(event_name, start_time, end_time, location, username=None, organization_name=None):
     # Parse the start_time and end_time with timezone awareness
@@ -167,23 +139,6 @@ def add_org_to_user(email, organization):
     #Add organization to user
     User.objects(username=email).update(add_to_set__organizations=[organization])
     return print(f"Success: Added '{organization}' to user '{email}'")
-
-def add_class_to_user(email, enrolledclass):
-    email = email.lower()
-
-    #Check if valid email
-    if not User.objects(username=email):
-        return print("Error: Account not found")
-    
-    #Check if class already in user list
-    if User.objects(username=email, classes=enrolledclass):
-        return print("Error: Class already added")
-
-    #Add class to user
-    User.objects(username=email).update(add_to_set__classes=[enrolledclass])
-
-def add_holiday_to_user():
-    pass #Add holiday to list on user
 
 def remove_org_from_user(email, organization):
     email = email.lower()

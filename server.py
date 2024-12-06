@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
 from mongoengine import connect
-from models import User, Organization, add_user, get_user_events, add_event, remove_user, remove_org, remove_event, remove_org_from_user  # Import User and helper functions from class.py
+from models import User, Organization, add_user, get_user_events, add_event, remove_event, remove_org_from_user  # Import User and helper functions from class.py
 import hashlib
 from datetime import datetime, timedelta
 import calendar
