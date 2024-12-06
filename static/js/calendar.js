@@ -9,15 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalEventTime = document.getElementById('modal-event-time');
     const modalEventLocation = document.getElementById('modal-event-location');
     const addEventForm = document.getElementById('add-event-form');
+    const deleteEventButton = document.getElementById('delete-event-button');
+    const deleteEventError = document.getElementById('delete-event-error');
     
     // Initialize with current week start from the template
     let currentWeekStart = new Date(weekStartStr); // Use weekStartStr defined in the template
     console.log("Current Week Start:", currentWeekStart);
-    
+    let currentEvent = null;
+
     /**
      * Adjusts JavaScript's getDay() output to align with Monday as 0.
-     * @param {number} day - The day index from getDay() (0 for Sunday, 6 for Saturday).
-     * @returns {number} - Adjusted day index (0 for Monday, 6 for Sunday).
+     * @param {number} day
+     * @returns {number}
      */
     function getAdjustedDayIndex(day) {
         return (day + 6) % 7;
@@ -25,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     /**
      * Updates the displayed dates for each weekday in the calendar header.
-     * @param {Date} weekStartDate - The starting date of the current week.
+     * @param {Date} weekStartDate
      */
     function updateWeekdaysDates(weekStartDate) {
         // Select all weekday-date elements, skipping the first one which is for 'Time'
@@ -42,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     /**
      * Updates the data-day attributes for all timeslot-events based on the current week.
-     * @param {Date} weekStartDate - The starting date of the current week.
+     * @param {Date} weekStartDate
      */
     function updateTimeslotDataDays(weekStartDate) {
         // Select all timeslot-events elements
@@ -63,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     /**
      * Fetches and renders events for a specific week.
-     * @param {Date} weekStartDate - The starting date of the current week.
+     * @param {Date} weekStartDate
      */
     function fetchAndRenderEvents(weekStartDate) {
         // Format weekStartDate to YYYY-MM-DD
@@ -73,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update the URL with the new week_start parameter
         history.pushState({}, '', `?week_start=${weekStartStrFormatted}`);
         
-        // Fetch events from the server via AJAX
         fetch(`/get_events?week_start=${weekStartStrFormatted}`)
             .then(response => response.json())
             .then(data => {
@@ -97,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Renders events on the calendar with proper handling of overlapping events.
-     * @param {Array} eventsToRender - Array of event objects to render.
+     * @param {Array} eventsToRender
      */
     function renderEvents(eventsToRender) {
         // Clear existing events
@@ -194,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Updates the week range header.
-     * @param {Date} weekStartDate - The starting date of the current week.
+     * @param {Date} weekStartDate
      */
     function updateWeekRangeHeader(weekStartDate) {
         const weekEndDate = new Date(weekStartDate.getTime() + 6 * 24 * 60 * 60 * 1000);
@@ -230,9 +232,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Opens the event details modal with formatted time.
-     * @param {Object} event - The event object containing details.
+     * @param {Object} event
      */
     function openEventModal(event) {
+        // Reset the modal state
+        deleteEventError.style.display = 'none';
+        currentEvent = null; // Clear any previously selected event
+
+        // Populate the modal with the new event details
+        currentEvent = event;
         modalEventName.innerText = `Name: ${event.name}`;
         
         const eventStart = new Date(event.starttime);
@@ -256,10 +264,11 @@ document.addEventListener('DOMContentLoaded', () => {
         eventModal.style.display = 'block';
     }
 
+
     /**
      * Opens the add event modal with pre-filled date and time.
-     * @param {string} day - The date string in YYYY-MM-DD format.
-     * @param {string} time - The time string in HH:MM format.
+     * @param {string} day
+     * @param {string} time
      */
     function openAddEventModal(day, time) {
         addEventModal.style.display = 'block';
@@ -298,6 +307,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    deleteEventButton.addEventListener('click', () => {
+        if (!currentEvent) {
+            console.error('No event selected for deletion.');
+            return;
+        }
+    
+        console.log('Deleting event:', currentEvent);
+    
+        fetch('/delete_event', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ event_name: currentEvent.name }),
+        })
+            .then(response => {
+                console.log('Delete event response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Delete event response data:', data);
+                if (data.error) {
+                    if (data.error === 'Permission Denied') {
+                        deleteEventError.style.display = 'block';
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                } else {
+                    alert(`Success: ${data.message}`);
+                    eventModal.style.display = 'none';
+                    fetchAndRenderEvents(currentWeekStart); // Reload events after successful deletion
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting event:', error);
+                alert('An error occurred while deleting the event.');
+            });
+    });
+    
+
     // Add event listener to timeslot-events for adding new events
     const timeslotEventContainers = document.querySelectorAll('.timeslot-events');
     timeslotEventContainers.forEach(container => {
@@ -308,9 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    /**
-     * Handles the submission of the add event form.
-     */
+
     addEventForm.addEventListener('submit', (e) => {
         e.preventDefault();
         

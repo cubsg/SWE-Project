@@ -6,6 +6,7 @@ import hashlib
 from dateutil import parser
  
 me.connect(host="mongodb://127.0.0.1:27017/TaskBoardDB")
+
 class User(me.Document):
     username = me.EmailField()
     password = me.StringField()
@@ -20,11 +21,6 @@ class Organization(me.Document):
     type = me.StringField()
     name = me.StringField()
     events = me.ListField(me.DictField())
-
-'''class Holiday(Document):
-    name = StringField()
-    day = DateTimeField()
-    repeat = BooleanField()'''
 
 class Event(me.Document):
     name = me.StringField(required=True)
@@ -51,6 +47,7 @@ def add_user(email, password, firstname, lastname):
     user_data.save()
     return "Success: User added successfully"
 
+'''
 def add_org(type, name, username):
     name = name.lower()
 
@@ -74,6 +71,7 @@ def add_org(type, name, username):
     add_org_to_user(username, name)
 
     return print(f"Success: {username} Created {name}")
+'''
 
 def add_event(event_name, start_time, end_time, location, username=None, organization_name=None):
     # Parse the start_time and end_time with timezone awareness

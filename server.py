@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
 from mongoengine import connect
-from models import User, Organization,add_user, get_user_events, add_event, remove_user, remove_org, remove_event, remove_org_from_user, add_org  # Import User and helper functions from class.py
+from models import User, Organization, add_user, get_user_events, add_event, remove_user, remove_org, remove_event, remove_org_from_user  # Import User and helper functions from class.py
 import hashlib
 from datetime import datetime, timedelta
 import calendar
@@ -238,32 +238,38 @@ def event_setting():
     # If GET request, redirect to calendar or render a default view
     return redirect(url_for('calendar_view'))
 
-@app.route('/delete_user', methods=['POST'])
-def delete_user():
-    username = request.form.get('username')
-    result = remove_user(username)
-    if "Success" in result:
-        return jsonify({"message": result})
-    else:
-        return jsonify({"error": result}), 400
-
-@app.route('/delete_org', methods=['POST'])
-def delete_org():
-    org_name = request.form.get('org_name')
-    result = remove_org(org_name)
-    if "Success" in result:
-        return jsonify({"message": result})
-    else:
-        return jsonify({"error": result}), 400
-
 @app.route('/delete_event', methods=['POST'])
 def delete_event():
-    event_name = request.form.get('event_name')
-    result = remove_event(event_name)
-    if "Success" in result:
-        return jsonify({"message": result})
-    else:
-        return jsonify({"error": result}), 400
+    if 'username' not in session:
+        return jsonify({"error": "Unauthorized access."}), 401
+
+    username = session['username']
+    data = request.get_json()
+    event_name = data.get('event_name')
+
+    if not event_name:
+        return jsonify({"error": "Event name is required."}), 400
+
+    # Check if the event belongs to the user or an organization
+    user = User.objects(username=username.lower()).first()
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+
+    # Check personal events
+    for event in user.events:
+        if event['name'] == event_name:
+            user.update(pull__events={"name": event_name})
+            return jsonify({"message": f"Event '{event_name}' deleted successfully."})
+
+    # Check organization events
+    for org_name in user.organizations:
+        organization = Organization.objects(name=org_name.lower()).first()
+        if organization:
+            for event in organization.events:
+                if event['name'] == event_name:
+                    return jsonify({"error": "Permission Denied"}), 403
+
+    return jsonify({"error": "Event not found."}), 404
 
 @app.route('/remove_org_from_user', methods=['POST'])
 def remove_org_from_user_route():
@@ -294,7 +300,7 @@ def remove_org_from_user_route():
     
     flash(f"Organization '{organization_name.title()}' removed from your profile.", "success")
     return redirect(url_for('personal_info'))
-    
+
 @app.route('/add_organization_to_user', methods=['POST'])
 def add_organization_to_user():
     if 'username' not in session:
