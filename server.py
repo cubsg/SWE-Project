@@ -5,13 +5,14 @@ import hashlib
 from datetime import datetime, timedelta
 import calendar
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.secret_key = 'supersecretkey'
 connect(host="mongodb://127.0.0.1:27017/TaskBoardDB")  # Connect to the MongoDB database
 
 @app.route('/')
 def home():
-    return redirect(url_for('login'))
+    # Home Page
+    return render_template('Home.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -34,7 +35,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('username', None)
-    return redirect(url_for('login'))
+    return render_template('Home.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

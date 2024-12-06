@@ -1,6 +1,181 @@
-form {
-     color: blue;
+/*Home Page*/
+.gradient-background {
+  background: linear-gradient(300deg, #3572ef, #179bae, #a7e6ff, #a7e6ff);
+  background-size: 180% 180%;
+  animation: gradient-animation 18s ease infinite;
 }
-h1{
-     color: orange;
+
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
+
+.icon-square {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+}
+
+.profile-img {
+  height: 1000px;
+  border-radius: 50%;
+}
+
+.logo {
+  margin-left: 10px;
+  margin-right: 10px;
+  height: 30px;
+}
+
+.company {
+  color: #0a97b0;
+}
+
+.nav-link {
+  color: #0a97b0;
+}
+
+.signup {
+  margin-left: 5px;
+  margin-right: 15px;
+}
+
+.workingman-image {
+  border-radius: 10rem;
+  border: 2px solid black;
+}
+
+.feature-icon {
+  height: 4rem;
+  width: 4rem;
+  border-radius: 15px;
+}
+
+/*Login + Register Page*/
+body.loginPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-image: url("../Images/loginBack.jpg");
+  background-repeat: no-repeat;
+  font-family: "Poppins", sans-serif;
+}
+
+.loginWrapper {
+  width: 420px;
+  background-color: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(50px);
+  color: #fff;
+  border-radius: 10px;
+  padding: 30px 40px;
+}
+
+.loginWrapper h1 {
+  font-size: 36px;
+  text-align: center;
+}
+
+.loginWrapper .Input {
+  width: 100%;
+  height: 50px;
+  margin: 30px 0;
+  font-weight: bold;
+}
+
+.Input input {
+  width: 95%;
+  height: 70%;
+  background: transparent;
+  border: none;
+  outline: none;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  font-size: 14px;
+  color: #fff;
+  padding: 5px 15px 5px;
+}
+
+.Input input::placeholder {
+  color: #fff;
+}
+
+.loginWrapper .submit {
+  width: 100%;
+  height: 45px;
+  background-color: #fff;
+  border: none;
+  outline: none;
+  border-radius: 40px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.loginWrapper .register-link {
+  font-size: 18px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.register-link .Register {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.register-link p a:hover {
+  color: #0a97b0;
+}
+
+.error {
+  color: #fff;
+  text-align: center;
+  background-color: #ff204e;
+  border-radius: 40px;
+}
+
+/*Base Page*/
+.navbar {
+  justify-content: center;
+  text-align: center;
+}
+
+.calendarBody {
+  background-color: #00235B;
+}
+
+.navbar button {
+  width: 40%;
+  background: transparent;
+  border: none;
+  outline: none;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  font-size: 14px;
+  color: #fff;
+  padding: 5px 15px 5px;
+}
+
+.navbar #profile {
+  background-color: #468B97;
+  width: 10%;
+}
+
+.navbar #calendar{
+  
+  background-color: #2C4E80;
+}
+
+.navbar #logout {
+  background-color: #ff204e;
+  width: 10%;
+}
+
+/*Profile Page*/

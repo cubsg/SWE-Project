@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <title>{% block title %}Student Calendar{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block head %}{% endblock %}
 </head>
-<body>
+<body class="calendarBody">
     {% if session.get('username') %}
     <div class="navbar">
         <button id="profile" onclick="location.href='{{ url_for('personal_info') }}'">

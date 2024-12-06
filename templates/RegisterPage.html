@@ -5,30 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
 </head>
-<link rel="stylesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
+<link rel="stylesheet" href="../static/CSS/style.css">
 
-<body>
-    <h1>First Time here?</h1>
+<body class="loginPage gradient-background">
+    <div class="loginWrapper">
     <form id="registerForm" method="POST">
-        <label for="username">Username:</label>
+        <h1 class="loginHeader">First Time here?</h1>
+        <div class="Input">
+        <label for="username">Email:</label>
         <input type="text" id="username" name="username" placeholder="example@mail.com" required>
-        <br><br>
-
+        </div>
+        <div class="Input">
         <label for="pwd">Password:</label>
-        <input type="password" id="pwd" name="pwd" placeholder="Keep it secret!" required>
-        <br><br>
-
+        <input type="password" id="pwd" name="pwd" placeholder="password" required>
+        </div>
+        <div class="Input">
         <label for="firstname">First Name:</label>
         <input type="text" id="firstname" name="firstname" required>
-        <br><br>
-
+    </div>
+    <div class="Input">
         <label for="lastname">Last Name:</label>
         <input type="text" id="lastname" name="lastname" required>
-        <br><br>
+    </div>
 
-        <input type="submit" value="Submit">
+        <input class="submit" type="submit" value="Register">
         <p id="errorMessage" style="color:red;"></p> <!-- Placeholder for error messages -->
-    </form>
+    </div>
+    </form></div>
 
     <script>
         document.getElementById('registerForm').addEventListener('submit', async function(event) {
