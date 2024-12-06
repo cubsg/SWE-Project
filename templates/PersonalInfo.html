@@ -8,20 +8,22 @@
 {% endblock %}
 
 {% block content %}
+<div class="profilePage">
+    <div class="profileContent">
     <h1 class="profileHeader">Personal Information</h1>
 
     <p><strong>Username:</strong> {{ user.username }}</p>
     <p><strong>First Name:</strong> {{ user.firstname }}</p>
     <p><strong>Last Name:</strong> {{ user.lastname }}</p>
 
-    <h2>Your Organizations:</h2>
+    <h2 class="profileHeader">Your Organizations:</h2>
     <ul>
         {% for org in user.organizations %}
             <li>
                 {{ org.title() }}
                 <form action="{{ url_for('remove_org_from_user_route') }}" method="POST" style="display:inline;">
                     <input type="hidden" name="organization" value="{{ org }}">
-                    <button type="submit">Remove</button>
+                    <button type="submit" class="remove">Remove</button>
                 </form>
             </li>
         {% else %}
@@ -29,21 +31,26 @@
         {% endfor %}
     </ul>
 
-
-    <a href="{{ url_for('personal_info_settings') }}">Set My Name</a><br><br>
-    <a href="{{ url_for('event_setting') }}">Create an Event</a><br><br>
-    <h2>Add an Organization to Your Profile</h2>
+    <div class="Links">
+    <a class="profileLink" href="{{ url_for('personal_info_settings') }}">Set My Name</a><br><br>
+    <a class="profileLink" href="{{ url_for('event_setting') }}">Create an Event</a><br><br>
+</div>
+    <h2 class="profileHeader">Add an Organization to Your Profile</h2>
     <form action="{{ url_for('add_organization_to_user') }}" method="POST">
         <label for="organization">Select Organization:</label><br>
-        <select name="organization" id="organization" required>
-            <option value="" disabled selected>-- Select an Organization --</option>
+        <div class="orgButtons">
+        <select class="selector" name="organization" id="organization" required>
+            <option class="selection" disabled selected>-- Select an Organization --</option>
             {% for org in all_organizations %}
                 {% if org.name not in user.organizations %}
-                    <option value="{{ org.name }}">{{ org.name.title() }}</option>
+                    <option class="selection" value="{{ org.name }}">{{ org.name.title() }}</option>
                 {% endif %}
             {% endfor %}
         </select><br><br>
-        <button type="submit">Add Organization</button>
+        <button class="addOrg" type="submit">Add Organization</button>
+    </div>
     </form>
+</div>
+</div>
 
 {% endblock %}

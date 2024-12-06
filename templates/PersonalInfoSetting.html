@@ -9,7 +9,9 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Set Your Personal Information!</h1>
+<div class="profilePage">
+    <div class="profileContent">
+    <h1 class="profileHeader">Set Your Personal Information!</h1>
 
     {% if error %}
         <p class="error">{{ error }}</p>
@@ -17,16 +19,15 @@
 
     <form method="POST">
         <label for="firstname">First Name:</label>
-        <input type="text" id="firstname" name="firstname" value="{{ user.firstname }}" required>
-        <br><br>
+        <input class="textBox" type="text" id="firstname" name="firstname" value="{{ user.firstname }}" required>
 
         <label for="lastname">Last Name:</label>
-        <input type="text" id="lastname" name="lastname" value="{{ user.lastname }}" required>
-        <br><br>
+        <input class="textBox" type="text" id="lastname" name="lastname" value="{{ user.lastname }}" required>
 
-        <button type="submit">Submit</button>
+        <button class="addOrg" type="submit">Submit</button>
     </form>
-
-    <br><br>
-    <a href="{{ url_for('personal_info') }}">Back to Personal Info Page</a>
+    <div class="Links">
+    <a class="backLink" href="{{ url_for('personal_info') }}">Back to Personal Info Page</a>
+</div></div>
+</div>
 {% endblock %}
