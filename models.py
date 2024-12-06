@@ -212,7 +212,7 @@ def get_user_events(username, week_start_str=None):
     except ValueError:
         return []
 
-    week_end_date = week_start_date + timedelta(days=6)
+    week_end_date = week_start_date + timedelta(days=7)
     
     user_events = [
         event for event in user.events
